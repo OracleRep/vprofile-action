@@ -1,5 +1,6 @@
 package com.visualpathit.account.service;
 
+import com.visualpathit.account.model.Role;
 import com.visualpathit.account.model.User;
 import com.visualpathit.account.repository.RoleRepository;
 import com.visualpathit.account.repository.UserRepository;
@@ -25,4 +26,33 @@ public class UserServiceImpl implements UserService {
             final UserRepository userRepository,
             final RoleRepository roleRepository,
             final BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userReposit
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public void save(final User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        final Set<Role> roles = new HashSet<>(roleRepository.findAll());
+        user.setRoles(roles);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public User findByUsername(final String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public List<User> getList() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User findById(final long id) {
+        return userRepository.findOne(id);
+    }
+}
