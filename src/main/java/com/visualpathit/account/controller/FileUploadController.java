@@ -1,13 +1,15 @@
 package com.visualpathit.account.controller;
 
+import com.visualpathit.account.model.User;
+import com.visualpathit.account.service.UserService;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.List;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,65 +18,74 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.visualpathit.account.model.User;
-import com.visualpathit.account.service.UserService;
-
+/**
+ * Controller for uploading user profile images.
+ */
 @Controller
 public class FileUploadController {
-	 @Autowired
-	    private UserService userService;
-	private static final Logger logger = LoggerFactory
-			.getLogger(FileUploadController.class);
 
-	/**
-	 * Upload single file using Spring Controller
-	 */
-	@RequestMapping(value = { "/upload"} , method = RequestMethod.GET)
-    public final String upload(final Model model) {
-        return "upload";
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileUploadController.class);
+
+    private static final String VIEW_UPLOAD = "upload";
+    private static final String TMP_DIR_NAME = "tmpFiles";
+    private static final String FILE_EXT = ".png";
+
+    private final UserService userService;
+
+    public FileUploadController(final UserService userService) {
+        this.userService = userService;
     }
-	@RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-	public @ResponseBody
-	String uploadFileHandler(@RequestParam("name") String name,@RequestParam("userName") String userName,
-			@RequestParam("file") MultipartFile file) {
-		
-		System.out.println("Called the upload file :::" );
-		if (!file.isEmpty()) {
-			try {
-				byte[] bytes = file.getBytes();
 
-				// Creating the directory to store file
-				String rootPath = System.getProperty("catalina.home");
-				System.out.println("Path ::::" +rootPath);
-				File dir = new File(rootPath + File.separator + "tmpFiles");
-				if (!dir.exists())
-					dir.mkdirs();
+    /**
+     * Upload single file view.
+     *
+     * @param model model
+     * @return upload view name
+     */
+    @RequestMapping(value = "/upload", method = RequestMethod.GET)
+    public String upload(final Model model) {
+        return VIEW_UPLOAD;
+    }
 
-				// Create the file on server
-				File serverFile = new File(dir.getAbsolutePath()
-						+ File.separator + name+".png");
-				//image saving 
-				User user = userService.findByUsername(userName);
-				user.setProfileImg(name +".png");
-				user.setProfileImgPath(serverFile.getAbsolutePath());
-				userService.save(user);
-				
-				BufferedOutputStream stream = new BufferedOutputStream(
-						new FileOutputStream(serverFile));
-				stream.write(bytes);
-				stream.close();
+    @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
+    public @ResponseBody String uploadFileHandler(
+            @RequestParam("name") final String name,
+            @RequestParam("userName") final String userName,
+            @RequestParam("file") final MultipartFile file) {
 
-				logger.info("Server File Location="
-						+ serverFile.getAbsolutePath());
+        if (file == null || file.isEmpty()) {
+            return "You failed to upload " + name + FILE_EXT + " because the file was empty.";
+        }
 
-				return "You successfully uploaded file=" + name +".png";
-			} catch (Exception e) {
-				return "You failed to upload " + name +".png" + " => " + e.getMessage();
-			}
-		} else {
-			return "You failed to upload " + name +".png"
-					+ " because the file was empty.";
-		}
-	}
+        try {
+            final byte[] bytes = file.getBytes();
+            final String rootPath = System.getProperty("catalina.home");
 
+            final File dir = new File(rootPath + File.separator + TMP_DIR_NAME);
+            if (!dir.exists() && !dir.mkdirs()) {
+                return "You failed to upload " + name + FILE_EXT + " => could not create directory.";
+            }
+
+            final File serverFile = new File(dir.getAbsolutePath() + File.separator + name + FILE_EXT);
+
+            final User user = userService.findByUsername(userName);
+            if (user != null) {
+                user.setProfileImg(name + FILE_EXT);
+                user.setProfileImgPath(serverFile.getAbsolutePath());
+                userService.save(user);
+            }
+
+            try (BufferedOutputStream stream =
+                    new BufferedOutputStream(new FileOutputStream(serverFile))) {
+                stream.write(bytes);
+            }
+
+            LOGGER.info("Server file location={}", serverFile.getAbsolutePath());
+            return "You successfully uploaded file=" + name + FILE_EXT;
+
+        } catch (IOException ex) {
+            LOGGER.error("Failed to upload file name={} userName={}", name, userName, ex);
+            return "You failed to upload " + name + FILE_EXT + " => " + ex.getMessage();
+        }
+    }
 }

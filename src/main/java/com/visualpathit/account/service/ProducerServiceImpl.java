@@ -1,56 +1,49 @@
 package com.visualpathit.account.service;
 
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.visualpathit.account.utils.RabbitMqUtil;
 
-import org.springframework.stereotype.Service;
-import com.rabbitmq.client.Channel;
-
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ProducerServiceImpl implements ProducerService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProducerServiceImpl.class);
+
     /**
-     *  The name of the Exchange
+     * The name of the exchange.
      */
     private static final String EXCHANGE_NAME = "messages";
 
+    private static final String EXCHANGE_TYPE = "fanout";
+    private static final String ROUTING_KEY = "";
+    private static final String RESPONSE_OK = "response";
+
     /**
-     *  This method publishes a message
-     * @param message
+     * Publishes a message to RabbitMQ.
+     *
+     * @param message the message to publish
+     * @return response string
      */
     @Override
-    public String produceMessage(String message) {
-        try {
-            ConnectionFactory factory = new ConnectionFactory();
-            /**
-            * System.out.println("Rabitmq host: ::" + RabbitMqUtil.getRabbitMqHost());
-            * System.out.println("Rabitmq port: ::" + RabbitMqUtil.getRabbitMqPort());
-            * System.out.println("Rabitmq user: ::" + RabbitMqUtil.getRabbitMqUser());
-            * System.out.println("Rabitmq password: ::" + RabbitMqUtil.getRabbitMqPassword());
-            **/
-            factory.setHost(RabbitMqUtil.getRabbitMqHost());
-            factory.setPort(Integer.parseInt(RabbitMqUtil.getRabbitMqPort()));
-            factory.setUsername(RabbitMqUtil.getRabbitMqUser());
-            factory.setPassword(RabbitMqUtil.getRabbitMqPassword());
-            Connection connection = factory.newConnection();
-            System.out.println("Connection open status"+connection.isOpen());
-            Channel channel = connection.createChannel();
-            channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
-            channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes());
-            System.out.println(" [x] Sent '" + message + "'");
-            channel.close();
-            connection.close();
-        } catch (IOException io) {
-            System.out.println("IOException");
-            io.printStackTrace();
-        } catch (TimeoutException toe) {
-            System.out.println("TimeoutException : " + toe.getMessage());
-            toe.printStackTrace();
-        }
-        return "response";
-    }
-}
+    public String produceMessage(final String message) {
+        final ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(RabbitMqUtil.getRabbitMqHost());
+        factory.setPort(Integer.parseInt(RabbitMqUtil.getRabbitMqPort()));
+        factory.setUsername(RabbitMqUtil.getRabbitMqUser());
+        factory.setPassword(RabbitMqUtil.getRabbitMqPassword());
+
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+
+            LOGGER.debug("RabbitMQ connection open: {}", connection.isOpen());
+
+            channel.

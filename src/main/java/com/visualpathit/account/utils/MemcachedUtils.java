@@ -1,134 +1,155 @@
 package com.visualpathit.account.utils;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.concurrent.Future;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.visualpathit.account.beans.Components;
 import com.visualpathit.account.model.User;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import net.spy.memcached.MemcachedClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * Memcached helper for storing and retrieving {@link User} objects.
+ * Uses active host first and falls back to standby host.
+ */
 @Service
 public class MemcachedUtils {
-	
-	private static Components object;
-    @Autowired
-    public void setComponents(Components object){
-    	MemcachedUtils.object = object;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MemcachedUtils.class);
+
+    private static final int DEFAULT_EXPIRE_SECONDS = 900;
+    private static final String STAT_KEY_PID = "pid";
+
+    private final Components components;
+
+    public MemcachedUtils(final Components components) {
+        this.components = components;
     }
-    public static String memcachedSetData(User user,String key){    	
-    	String Result = "";
-    	int expireTime =  900;
-    	try{
-    			MemcachedClient mactiveClient = memcachedConnection();
-    			System.out.println("--------------------------------------------");
-    			System.out.println("Client is ::"+ mactiveClient.getStats());
-    			System.out.println("--------------------------------------------");
-	            Future future = mactiveClient.set(key,expireTime, user);	        	         
-	     	    System.out.println("set status:" + future.get());
-	     	    Result =" Data is From DB and Data Inserted In Cache !!";
-	     	    mactiveClient.shutdown();             
-	           
-    		
-    	} catch (Exception e) {    		
-    		System.out.println( e.getMessage() );
-		}
-    	return Result;
+
+    public String memcachedSetData(final User user, final String key) {
+        MemcachedClient client = null;
+        try {
+            client = createConnection();
+            if (client == null) {
+                return "Cache connection unavailable";
+            }
+
+            final Future<Boolean> future = client.set(key, DEFAULT_EXPIRE_SECONDS, user);
+            final Boolean ok = future.get();
+
+            LOGGER.debug("Memcached set status for key {}: {}", key, ok);
+            return "Data is From DB and Data Inserted In Cache !!";
+
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            LOGGER.error("Interrupted while setting memcached key {}", key, ex);
+            return "Cache operation interrupted";
+        } catch (ExecutionException ex) {
+            LOGGER.error("Execution error while setting memcached key {}", key, ex);
+            return "Cache operation failed";
+        } finally {
+            shutdownQuietly(client);
+        }
     }
-    public static User memcachedGetData(String key){
-    	String Result = "";
-    	User userData = null;
-    	try{
-    			MemcachedClient mclient = memcachedConnection();
-    			System.out.println("--------------------------------------------");
-    			System.out.println("Client Status :: "+mclient.getStats());
-    			System.out.println("--------------------------------------------");
-	            userData = (User) mclient.get(key);
-	     	    System.out.println("user value in cache - " + mclient.get(key));
-	     	    Result =" Data Retrieval From Cache !!";
-	     	    System.out.println(Result);
-	     	    mclient.shutdown();               
-	           
-    	} catch (Exception e) {    		
-    		System.out.println( e.getMessage() );
-		}
-    	return userData;
+
+    public User memcachedGetData(final String key) {
+        MemcachedClient client = null;
+        try {
+            client = createConnection();
+            if (client == null) {
+                return null;
+            }
+
+            final Object value = client.get(key);
+            if (value instanceof User) {
+                LOGGER.debug("User value found in cache for key {}", key);
+                return (User) value;
+            }
+
+            LOGGER.debug("No user value in cache for key {}", key);
+            return null;
+
+        } finally {
+            shutdownQuietly(client);
+        }
     }
-    public static MemcachedClient memcachedConnection(){ 
-    	MemcachedClient mcconn = null;
-    	boolean active = true;
-    	String key="pid";
-    	String port = "";
-    	String activeHost =object.getActiveHost();
-    	String activePort =object.getActivePort();    	
-    	try{   		
-    		if(!activeHost.isEmpty() && !activePort.isEmpty() && active){
-	    		mcconn = new MemcachedClient(new InetSocketAddress(activeHost,Integer.parseInt(activePort)));
-	    		for(SocketAddress innerKey:mcconn.getStats().keySet()){
-	    			System.out.println("Connection  SocketAddress ::" + innerKey);
-	    			//System.out.println("Connection port ::" + mcconn.getStats().get(innerKey).get(key));
-	    			port = mcconn.getStats().get(innerKey).get(key);	    			
-	    		} 
-	    		if(port == null){
-    				System.out.println("Port::"+ port);
-    				mcconn.shutdown();
-    				System.out.println("--------------------------------------------");
-		       		System.out.println("Connection Failure By Active Host ::" + activeHost);
-		       		System.out.println("--------------------------------------------");
-		       		mcconn = null;
-		       		active =false;
-		       		return mcconn = standByMemcachedConn();
-    			}
-    			if(!port.isEmpty()){
-	    			System.out.println("--------------------------------------------");
-		    		System.out.println("Connection to server sucessfull for active Host ::"+activeHost);
-		            System.out.println("--------------------------------------------");
-		            active =true;
-		            return mcconn;
-	    		}
-	    	}else if(!activeHost.isEmpty() && !activePort.isEmpty() && !active){
-	    		return mcconn = standByMemcachedConn();
-	    	}else {
-	    		 System.out.println("--------------------------------------------");
-	    		 System.out.println("Connection to Failure Due to Incorrect or Empty Host:: ");
-	    		 System.out.println("--------------------------------------------");
-	    	}
-	    	}
-    	catch (Exception e) {
-    		System.out.println( e.getMessage() );
-		}
-    	return mcconn;
-    }   
-    public static MemcachedClient standByMemcachedConn(){
-    	MemcachedClient mcconn = null;
-    	String port = "";
-    	String key="pid";
-    	String standByHost = object.getStandByHost();
-    	String standByPort = object.getStandByPort();
-    	try{
-    	if(!standByHost.isEmpty() && !standByPort.isEmpty() && mcconn == null && port.isEmpty()){
-    		mcconn = new MemcachedClient(new InetSocketAddress(standByHost,Integer.parseInt(standByPort)));
-    		for(SocketAddress innerKey:mcconn.getStats().keySet()){
-    			port = mcconn.getStats().get(innerKey).get(key);    		
-    		}
-    		if(!port.isEmpty()){
-	    		System.out.println("--------------------------------------------");
-	    		System.out.println("Connection to server sucessful by StandBy Host::" + standByHost);
-	            System.out.println("--------------------------------------------");
-	            return mcconn;
-    		}else {
-	    		 mcconn.shutdown();
-	       		 System.out.println("--------------------------------------------");
-	       		 System.out.println("Connection Failure By StandBy Host ::" +standByHost);
-	       		 System.out.println("--------------------------------------------");
-    		}
-    	}
-    	}catch (Exception e) {
-    		System.out.println( e.getMessage() );
-		}
-    	return mcconn;
-    }    
+
+    private MemcachedClient createConnection() {
+        final String activeHost = components.getActiveHost();
+        final String activePort = components.getActivePort();
+
+        if (isBlank(activeHost) || isBlank(activePort)) {
+            LOGGER.warn("Active memcached host/port is empty; trying standby");
+            return createStandbyConnection();
+        }
+
+        final MemcachedClient activeClient = tryConnect(activeHost, activePort);
+        if (activeClient != null) {
+            return activeClient;
+        }
+
+        return createStandbyConnection();
+    }
+
+    private MemcachedClient createStandbyConnection() {
+        final String standbyHost = components.getStandByHost();
+        final String standbyPort = components.getStandByPort();
+
+        if (isBlank(standbyHost) || isBlank(standbyPort)) {
+            LOGGER.warn("Standby memcached host/port is empty");
+            return null;
+        }
+
+        return tryConnect(standbyHost, standbyPort);
+    }
+
+    private MemcachedClient tryConnect(final String host, final String port) {
+        MemcachedClient client = null;
+        try {
+            client = new MemcachedClient(new InetSocketAddress(host, Integer.parseInt(port)));
+
+            if (hasPidStat(client)) {
+                LOGGER.info("Connected to memcached host={}", host);
+                return client;
+            }
+
+            LOGGER.warn("Memcached connection check failed (pid stat missing) for host={}", host);
+            shutdownQuietly(client);
+            return null;
+
+        } catch (IOException | RuntimeException ex) {
+            LOGGER.error("Failed to connect to memcached host={} port={}", host, port, ex);
+            shutdownQuietly(client);
+            return null;
+        }
+    }
+
+    private boolean hasPidStat(final MemcachedClient client) {
+        final Map<SocketAddress, Map<String, String>> stats = client.getStats();
+        for (final Map.Entry<SocketAddress, Map<String, String>> entry : stats.entrySet()) {
+            final String pid = entry.getValue().get(STAT_KEY_PID);
+            if (pid != null && !pid.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void shutdownQuietly(final MemcachedClient client) {
+        if (client != null) {
+            client.shutdown();
+        }
+    }
+
+    private boolean isBlank(final String value) {
+        return value == null || value.trim().isEmpty();
+    }
 }
