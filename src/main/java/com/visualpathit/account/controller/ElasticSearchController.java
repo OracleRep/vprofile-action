@@ -34,7 +34,7 @@ public class ElasticSearchController {
 	@Autowired
     private UserService userService;
     
-    @RequestMapping(value="/user/elasticsearch", method=RequestMethod.GET)
+    @RequestMapping(value = "/user/elasticsearch", method = RequestMethod.GET)
     public String insert(final Model model) throws IOException {
     	List<User> users = userService.getList();
     	//contextMapping();
@@ -60,9 +60,9 @@ public class ElasticSearchController {
                         .endObject()
                 )
                 .get();
-        String res =response.getResult().toString();
+        String res = response.getResult().toString();
         System.out.println(res);
-        result="Users";
+        result = "Users";
     	}
     	model.addAttribute(result);
         return "elasticeSearchRes";
@@ -115,7 +115,7 @@ public class ElasticSearchController {
     @RequestMapping(value="/rest/users/delete/{id}", method=RequestMethod.GET)
     public String delete(@PathVariable final String id,final Model model) {
 
-        DeleteResponse deleteResponse =ElasticsearchUtil.trannsportClient().prepareDelete("employee", "id", id).get();
+        DeleteResponse deleteResponse = ElasticsearchUtil.trannsportClient().prepareDelete("employee", "id", id).get();
         System.out.println(deleteResponse.getResult().toString());
         model.addAttribute("res", deleteResponse.getResult().toString());
         return "elasticeSearchRes";
