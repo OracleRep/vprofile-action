@@ -37,9 +37,10 @@ public class ProducerServiceImpl implements ProducerService {
         factory.setUsername(rabbitMqUtil.getRabbitMqUser());
         factory.setPassword(rabbitMqUtil.getRabbitMqPassword());
 
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
+        Channel channel = null;
 
+        try (Connection connection = factory.newConnection()) {
+            channel = connection.createChannel();
             channel.exchangeDeclare(EXCHANGE_NAME, EXCHANGE_TYPE);
             channel.basicPublish(EXCHANGE_NAME, ROUTING_KEY, null, message.getBytes(StandardCharsets.UTF_8));
 
@@ -49,6 +50,19 @@ public class ProducerServiceImpl implements ProducerService {
         } catch (IOException | TimeoutException ex) {
             LOGGER.error("Failed to publish message to RabbitMQ", ex);
             return RESPONSE_OK;
+
+        } finally {
+            closeQuietly(channel);
+        }
+    }
+
+    private void closeQuietly(final Channel channel) {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException | TimeoutException ex) {
+                LOGGER.debug("Failed to close RabbitMQ channel", ex);
+            }
         }
     }
 }
