@@ -31,4 +31,5 @@ public class RabbitMqUtil {
     public String getRabbitMqPassword() {
         return components.getRabbitMqPassword();
     }
-}
+} 
+

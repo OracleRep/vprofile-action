@@ -57,4 +57,5 @@ public class ElasticsearchUtil {
             throw ex;
         }
     }
-}
+} 
+

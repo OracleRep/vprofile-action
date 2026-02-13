@@ -120,4 +120,5 @@ public class ElasticSearchController {
         model.addAttribute(MODEL_KEY_RESULT, deleteResponse.getResult().toString());
         return VIEW_NAME;
     }
-}
+} 
+

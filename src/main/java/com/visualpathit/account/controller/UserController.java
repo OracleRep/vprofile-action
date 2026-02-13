@@ -178,4 +178,5 @@ public final class UserController {
         final String uuid = UUID.randomUUID().toString();
         return "uuid = " + uuid;
     }
-}
+} 
+

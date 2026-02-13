@@ -92,4 +92,5 @@ public class Components {
     public String getElasticsearchNode() {
         return elasticsearchNode;
     }
-}
+} 
+

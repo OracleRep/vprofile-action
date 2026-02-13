@@ -260,4 +260,5 @@ public class User implements Serializable {
     public void setWorkingExperience(final String workingExperience) {
         this.workingExperience = workingExperience;
     }
-}
+} 
+
