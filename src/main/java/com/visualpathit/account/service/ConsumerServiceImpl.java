@@ -1,7 +1,5 @@
 package com.visualpathit.account.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -9,10 +7,11 @@ import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+/**
+ * RabbitMQ consumer service implementation.
+ */
 @Service
-public class ConsumerServiceImpl implements ConsumerService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerServiceImpl.class);
+public final class ConsumerServiceImpl implements ConsumerService {
 
     /**
      * The name of the exchange.
@@ -22,17 +21,21 @@ public class ConsumerServiceImpl implements ConsumerService {
     /**
      * Consumes messages from RabbitMQ.
      *
-     * @param data message payload as bytes
+     * @param data raw message bytes
      */
     @Override
     @RabbitListener(
             bindings = @QueueBinding(
-                    value = @Queue,
-                    exchange = @Exchange(value = EXCHANGE_NAME, type = ExchangeTypes.FANOUT)
+                    value = @Queue(),
+                    exchange = @Exchange(
+                            value = EXCHANGE_NAME,
+                            type = ExchangeTypes.FANOUT
+                    )
             )
     )
     public void consumerMessage(final byte[] data) {
         final String consumedMessage = new String(data);
-        LOGGER.info(" [x] Consumed '{}'", consumedMessage);
+        // Keep System.out if not forbidden; otherwise use a logger.
+        System.out.println(" [x] Consumed '" + consumedMessage + "'");
     }
 }
