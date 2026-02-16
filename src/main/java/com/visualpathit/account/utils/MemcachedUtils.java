@@ -36,11 +36,11 @@ public final class MemcachedUtils {
     /**
      * Injects application components used by this utility.
      *
-     * @param components configuration components
+     * @param injectedComponents configuration components
      */
     @Autowired
-    public void setComponents(final Components components) {
-        MemcachedUtils.components = components;
+    public void setComponents(final Components injectedComponents) {
+        MemcachedUtils.components = injectedComponents;
     }
 
     /**
@@ -60,11 +60,8 @@ public final class MemcachedUtils {
             System.out.println("Client is :: " + activeClient.getStats());
             System.out.println("--------------------------------------------");
 
-            Future<?> future = activeClient.set(
-                    key,
-                    DEFAULT_EXPIRY_SECONDS,
-                    user
-            );
+            Future<?> future =
+                    activeClient.set(key, DEFAULT_EXPIRY_SECONDS, user);
 
             System.out.println("set status: " + future.get());
             result = "Data is From DB and Data Inserted In Cache !!";
@@ -139,6 +136,7 @@ public final class MemcachedUtils {
                     System.out.println(
                             "Connection SocketAddress :: " + address
                     );
+
                     port = connection.getStats()
                             .get(address)
                             .get(STATS_PORT_KEY);

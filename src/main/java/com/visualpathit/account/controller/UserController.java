@@ -135,7 +135,10 @@ public final class UserController {
      * @param model the UI model
      * @return view name
      */
-    @RequestMapping(value = {"/", "/welcome"}, method = RequestMethod.GET)
+    @RequestMapping(
+            value = {"/", "/welcome"},
+            method = RequestMethod.GET
+    )
     public String welcome(final Model model) {
         return "welcome";
     }
@@ -257,28 +260,18 @@ public final class UserController {
         user.setMotherName(userForm.getMotherName());
         user.setGender(userForm.getGender());
         user.setLanguage(userForm.getLanguage());
-        user.setMaritalStatus(
-                userForm.getMaritalStatus()
-        );
+        user.setMaritalStatus(userForm.getMaritalStatus());
         user.setNationality(userForm.getNationality());
-        user.setPermanentAddress(
-                userForm.getPermanentAddress()
-        );
+        user.setPermanentAddress(userForm.getPermanentAddress());
         user.setTempAddress(userForm.getTempAddress());
         user.setPhoneNumber(userForm.getPhoneNumber());
         user.setSecondaryPhoneNumber(
                 userForm.getSecondaryPhoneNumber()
         );
-        user.setPrimaryOccupation(
-                userForm.getPrimaryOccupation()
-        );
-        user.setSecondaryOccupation(
-                userForm.getSecondaryOccupation()
-        );
+        user.setPrimaryOccupation(userForm.getPrimaryOccupation());
+        user.setSecondaryOccupation(userForm.getSecondaryOccupation());
         user.setSkills(userForm.getSkills());
-        user.setWorkingExperience(
-                userForm.getWorkingExperience()
-        );
+        user.setWorkingExperience(userForm.getWorkingExperience());
 
         userService.save(user);
 

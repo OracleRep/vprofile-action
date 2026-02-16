@@ -19,11 +19,11 @@ public final class RabbitMqUtil {
     /**
      * Injects application components used by this utility.
      *
-     * @param components configuration components
+     * @param injectedComponents configuration components
      */
     @Autowired
-    public void setComponents(final Components components) {
-        RabbitMqUtil.components = components;
+    public void setComponents(final Components injectedComponents) {
+        RabbitMqUtil.components = injectedComponents;
     }
 
     /**

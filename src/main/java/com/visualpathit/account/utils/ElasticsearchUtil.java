@@ -26,11 +26,11 @@ public final class ElasticsearchUtil {
     /**
      * Injects application components used by this utility.
      *
-     * @param components configuration components
+     * @param injectedComponents configuration components
      */
     @Autowired
-    public void setComponents(final Components components) {
-        ElasticsearchUtil.components = components;
+    public void setComponents(final Components injectedComponents) {
+        ElasticsearchUtil.components = injectedComponents;
     }
 
     /**
@@ -46,12 +46,8 @@ public final class ElasticsearchUtil {
         String elasticsearchCluster = components.getElasticsearchCluster();
         String elasticsearchNode = components.getElasticsearchNode();
 
-        System.out.println(
-                "elasticsearchHost ........ " + elasticsearchHost
-        );
-        System.out.println(
-                "elasticsearchPort ........ " + elasticsearchPort
-        );
+        System.out.println("elasticsearchHost ........ " + elasticsearchHost);
+        System.out.println("elasticsearchPort ........ " + elasticsearchPort);
 
         TransportClient client = null;
 
