@@ -10,8 +10,7 @@ import com.visualpathit.account.validator.UserValidator;
 import java.util.List;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,164 +18,157 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-/**
- * Controller for user registration, login, profile, and cache-backed user lookup.
- */
+/**{@author imrant}*/
 @Controller
-public final class UserController {
+public class UserController {
+    @Autowired
+    private UserService userService;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+    @Autowired
+    private SecurityService securityService;
 
-    private static final int RABBIT_MESSAGE_COUNT = 20;
-
-    private final UserService userService;
-    private final SecurityService securityService;
-    private final UserValidator userValidator;
-    private final ProducerService producerService;
-    private final MemcachedUtils memcachedUtils;
-
-    public UserController(
-            final UserService userService,
-            final SecurityService securityService,
-            final UserValidator userValidator,
-            final ProducerService producerService,
-            final MemcachedUtils memcachedUtils) {
-        this.userService = userService;
-        this.securityService = securityService;
-        this.userValidator = userValidator;
-        this.producerService = producerService;
-        this.memcachedUtils = memcachedUtils;
-    }
-
+    @Autowired
+    private UserValidator userValidator;
+    
+    @Autowired
+    private ProducerService producerService;
+    
+    /** {@inheritDoc} */
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
-    public String registration(final Model model) {
+    public final String registration(final Model model) {
         model.addAttribute("userForm", new User());
-        return "registration";
-    }
-
+             	return "registration";
+      }
+    /** {@inheritDoc} */
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public String registration(
-            @ModelAttribute("userForm") final User userForm,
-            final BindingResult bindingResult,
-            final Model model) {
-
+    public final String registration(final @ModelAttribute("userForm") User userForm, 
+    	final BindingResult bindingResult, final Model model) {
+    	
         userValidator.validate(userForm, bindingResult);
         if (bindingResult.hasErrors()) {
             return "registration";
         }
-
+        System.out.println("User PWD:"+userForm.getPassword());
         userService.save(userForm);
+
         securityService.autologin(userForm.getUsername(), userForm.getPasswordConfirm());
 
         return "redirect:/welcome";
     }
-
+    /** {@inheritDoc} */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String login(final Model model, final String error, final String logout) {
-        if (error != null) {
+    public final String login(final Model model, final String error, final String logout) {
+        System.out.println("Model data"+model.toString());
+    	if (error != null){
             model.addAttribute("error", "Your username and password is invalid.");
         }
-        if (logout != null) {
+        if (logout != null){
             model.addAttribute("message", "You have been logged out successfully.");
         }
         return "login";
     }
-
-    @RequestMapping(value = {"/", "/welcome"}, method = RequestMethod.GET)
-    public String welcome(final Model model) {
+    /** {@inheritDoc} */
+    @RequestMapping(value = { "/", "/welcome"}, method = RequestMethod.GET)
+    public final String welcome(final Model model) {
         return "welcome";
     }
-
-    @RequestMapping(value = "/index", method = RequestMethod.GET)
-    public String indexHome(final Model model) {
+    /** {@inheritDoc} */
+    @RequestMapping(value = { "/index"} , method = RequestMethod.GET)
+    public final String indexHome(final Model model) {
         return "index_home";
     }
-
     @RequestMapping(value = "/users", method = RequestMethod.GET)
-    public String getAllUsers(final Model model) {
-        final List<User> users = userService.getList();
+    public String getAllUsers(Model model)
+    {	
+   
+        List<User> users = userService.getList();
+        //JSONObject jsonObject
+        System.out.println("All User Data:::" + users);
         model.addAttribute("users", users);
         return "userList";
     }
-
+    
     @RequestMapping(value = "/users/{id}", method = RequestMethod.GET)
-    public String getOneUser(@PathVariable("id") final String id, final Model model) {
-        try {
-            final User cached = memcachedUtils.memcachedGetData(id);
-            if (cached != null) {
-                model.addAttribute("user", cached);
-                model.addAttribute("Result", "Data is From Cache");
-                return "user";
-            }
-
-            final User user = userService.findById(Long.parseLong(id));
-            final String result = memcachedUtils.memcachedSetData(user, id);
-
-            model.addAttribute("user", user);
-            model.addAttribute("Result", result == null ? "Memcached Connection Failure !!" : result);
-            return "user";
-
-        } catch (RuntimeException ex) {
-            LOGGER.error("Failed to load user id={}", id, ex);
-            model.addAttribute("Result", "Error loading user");
-            return "user";
-        }
+    public String getOneUser(@PathVariable(value="id") String id,Model model)
+    {	
+    	String Result ="";
+    	try{
+    		if( id != null && MemcachedUtils.memcachedGetData(id)!= null){    			
+    			User userData =  MemcachedUtils.memcachedGetData(id);
+    			Result ="Data is From Cache";
+    			System.out.println("--------------------------------------------");
+    			System.out.println("Data is From Cache !!");
+    			System.out.println("--------------------------------------------");
+    			System.out.println("Father ::: "+userData.getFatherName());
+    			model.addAttribute("user", userData);
+    			model.addAttribute("Result", Result);
+    		}
+    		else{
+	    		User user = userService.findById(Long.parseLong(id)); 
+	    		Result = MemcachedUtils.memcachedSetData(user,id);
+	    		if(Result == null ){
+	    			Result ="Memcached Connection Failure !!";
+	    		}
+	    		System.out.println("--------------------------------------------");
+    			System.out.println("Data is From Database");
+    			System.out.println("--------------------------------------------");
+		        System.out.println("Result ::: "+ Result);	       
+		        model.addAttribute("user", user);
+		        model.addAttribute("Result", Result);
+    		}
+    	} catch (Exception e) {    		
+    		System.out.println( e.getMessage() );
+		}
+        return "user";
     }
-
-    @RequestMapping(value = "/user/{username}", method = RequestMethod.GET)
-    public String userUpdate(@PathVariable("username") final String username, final Model model) {
-        final User user = userService.findByUsername(username);
-        model.addAttribute("user", user);
-        return "userUpdate";
+    
+    /** {@inheritDoc} */
+    @RequestMapping(value = { "/user/{username}"} , method = RequestMethod.GET)
+    public final String userUpdate(@PathVariable(value="username") String username,final Model model) {
+    	User user = userService.findByUsername(username); 
+    	System.out.println("User Data:::" + user);
+    	model.addAttribute("user", user);
+    	return "userUpdate";
     }
-
-    @RequestMapping(value = "/user/{username}", method = RequestMethod.POST)
-    public String userUpdateProfile(
-            @PathVariable("username") final String username,
-            @ModelAttribute("user") final User userForm,
-            final Model model) {
-
-        final User user = userService.findByUsername(username);
-
-        user.setUsername(userForm.getUsername());
-        user.setUserEmail(userForm.getUserEmail());
-        user.setDateOfBirth(userForm.getDateOfBirth());
-        user.setFatherName(userForm.getFatherName());
-        user.setMotherName(userForm.getMotherName());
-        user.setGender(userForm.getGender());
-        user.setLanguage(userForm.getLanguage());
-        user.setMaritalStatus(userForm.getMaritalStatus());
-        user.setNationality(userForm.getNationality());
-        user.setPermanentAddress(userForm.getPermanentAddress());
-        user.setTempAddress(userForm.getTempAddress());
-        user.setPhoneNumber(userForm.getPhoneNumber());
-        user.setSecondaryPhoneNumber(userForm.getSecondaryPhoneNumber());
-        user.setPrimaryOccupation(userForm.getPrimaryOccupation());
-        user.setSecondaryOccupation(userForm.getSecondaryOccupation());
-        user.setSkills(userForm.getSkills());
-        user.setWorkingExperience(userForm.getWorkingExperience());
-
-        userService.save(user);
-        return "welcome";
+    @RequestMapping(value = { "/user/{username}"} , method = RequestMethod.POST)
+    public final String userUpdateProfile(@PathVariable(value="username") String username,final @ModelAttribute("user") User userForm,final Model model) {
+    	User user = userService.findByUsername(username);
+    	user.setUsername(userForm.getUsername());
+    	user.setUserEmail(userForm.getUserEmail());
+    	user.setDateOfBirth(userForm.getDateOfBirth());
+    	user.setFatherName(userForm.getFatherName());
+    	user.setMotherName(userForm.getMotherName());
+    	user.setGender(userForm.getGender());
+    	user.setLanguage(userForm.getLanguage());
+    	user.setMaritalStatus(userForm.getMaritalStatus());
+    	user.setNationality(userForm.getNationality());
+    	user.setPermanentAddress(userForm.getPermanentAddress());
+    	user.setTempAddress(userForm.getTempAddress());
+    	user.setPhoneNumber(userForm.getPhoneNumber());
+    	user.setSecondaryPhoneNumber(userForm.getSecondaryPhoneNumber());
+    	user.setPrimaryOccupation(userForm.getPrimaryOccupation());
+    	user.setSecondaryOccupation(userForm.getSecondaryOccupation());
+    	user.setSkills(userForm.getSkills());
+    	user.setWorkingExperience(userForm.getWorkingExperience());    	
+    	userService.save(user); 
+    	/*model.addAttribute("user", user);*/
+    	return "welcome";
     }
-
-    /**
-     * Produces sample messages into RabbitMQ for testing.
-     *
-     * @return rabbitmq view
-     */
-    @RequestMapping(value = "/user/rabbit", method = RequestMethod.GET)
-    public String rabbitmqSetUp() {
-        for (int i = 0; i < RABBIT_MESSAGE_COUNT; i++) {
-            producerService.produceMessage(generateString());
-        }
-        return "rabbitmq";
+    
+    @RequestMapping(value={"/user/rabbit"}, method={RequestMethod.GET})
+    public String rabbitmqSetUp() { 
+    	System.out.println("Rabbit mq method is callled!!!");
+      for (int i = 0; i < 20; i++) {
+        producerService.produceMessage(generateString());
+      }
+      return "rabbitmq";
     }
-
+    
     private static String generateString() {
-        final String uuid = UUID.randomUUID().toString();
-        return "uuid = " + uuid;
+      String uuid = UUID.randomUUID().toString();
+      return "uuid = " + uuid;
     }
-} 
+    
 
+    
+}

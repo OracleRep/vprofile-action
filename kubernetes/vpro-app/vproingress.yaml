@@ -7,7 +7,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: appdeploy.smartstephen.work 
+  - host: appdeploy.smartstephen.work
     http:
       paths:
       - path: /

@@ -1,22 +1,9 @@
 package com.visualpathit.account.service;
 
-/**
- * Security helper operations.
- */
+/** method for finding already added user !*/
 public interface SecurityService {
-
-    /**
-     * Finds the username of the currently authenticated user.
-     *
-     * @return username, or null if unavailable
-     */
+	/** {@inheritDoc}} !*/
     String findLoggedInUsername();
 
-    /**
-     * Performs programmatic login.
-     *
-     * @param username username
-     * @param password password
-     */
     void autologin(String username, String password);
 }
