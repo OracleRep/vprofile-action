@@ -172,7 +172,6 @@ public final class MemcachedUtils {
                     String okPrefix =
                             "Connection to server successful for Active Host "
                             + "::";
-                    
                     System.out.println(okPrefix);
                     System.out.println(activeHost);
 
