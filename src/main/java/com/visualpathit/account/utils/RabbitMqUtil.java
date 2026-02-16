@@ -14,7 +14,7 @@ public final class RabbitMqUtil {
     /**
      * Configuration components (injected once by Spring).
      */
-    private static Components COMPONENTS;
+    private static Components components;
 
     /**
      * Injects application components used by this utility.
@@ -23,7 +23,7 @@ public final class RabbitMqUtil {
      */
     @Autowired
     public void setComponents(final Components components) {
-        RabbitMqUtil.COMPONENTS = components;
+        RabbitMqUtil.components = components;
     }
 
     /**
@@ -32,7 +32,7 @@ public final class RabbitMqUtil {
      * @return RabbitMQ host
      */
     public static String getRabbitMqHost() {
-        return COMPONENTS.getRabbitMqHost();
+        return components.getRabbitMqHost();
     }
 
     /**
@@ -41,7 +41,7 @@ public final class RabbitMqUtil {
      * @return RabbitMQ port
      */
     public static String getRabbitMqPort() {
-        return COMPONENTS.getRabbitMqPort();
+        return components.getRabbitMqPort();
     }
 
     /**
@@ -50,7 +50,7 @@ public final class RabbitMqUtil {
      * @return RabbitMQ username
      */
     public static String getRabbitMqUser() {
-        return COMPONENTS.getRabbitMqUser();
+        return components.getRabbitMqUser();
     }
 
     /**
@@ -59,6 +59,6 @@ public final class RabbitMqUtil {
      * @return RabbitMQ password
      */
     public static String getRabbitMqPassword() {
-        return COMPONENTS.getRabbitMqPassword();
+        return components.getRabbitMqPassword();
     }
 }

@@ -21,7 +21,7 @@ public final class ElasticsearchUtil {
     /**
      * Configuration components (injected once by Spring).
      */
-    private static Components COMPONENTS;
+    private static Components components;
 
     /**
      * Injects application components used by this utility.
@@ -30,7 +30,7 @@ public final class ElasticsearchUtil {
      */
     @Autowired
     public void setComponents(final Components components) {
-        ElasticsearchUtil.COMPONENTS = components;
+        ElasticsearchUtil.components = components;
     }
 
     /**
@@ -41,13 +41,17 @@ public final class ElasticsearchUtil {
     public static TransportClient trannsportClient() {
         System.out.println("elasticsearch client");
 
-        String elasticsearchHost = COMPONENTS.getElasticsearchHost();
-        String elasticsearchPort = COMPONENTS.getElasticsearchPort();
-        String elasticsearchCluster = COMPONENTS.getElasticsearchCluster();
-        String elasticsearchNode = COMPONENTS.getElasticsearchNode();
+        String elasticsearchHost = components.getElasticsearchHost();
+        String elasticsearchPort = components.getElasticsearchPort();
+        String elasticsearchCluster = components.getElasticsearchCluster();
+        String elasticsearchNode = components.getElasticsearchNode();
 
-        System.out.println("elasticsearchHost ........ " + elasticsearchHost);
-        System.out.println("elasticsearchPort ........ " + elasticsearchPort);
+        System.out.println(
+                "elasticsearchHost ........ " + elasticsearchHost
+        );
+        System.out.println(
+                "elasticsearchPort ........ " + elasticsearchPort
+        );
 
         TransportClient client = null;
 

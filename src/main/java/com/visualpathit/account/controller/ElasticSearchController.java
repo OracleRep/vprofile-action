@@ -42,30 +42,55 @@ public final class ElasticSearchController {
      * @return view name
      * @throws IOException if JSON building fails
      */
-    @RequestMapping(value = "/user/elasticsearch", method = RequestMethod.GET)
+    @RequestMapping(
+            value = "/user/elasticsearch",
+            method = RequestMethod.GET
+    )
     public String insert(final Model model) throws IOException {
-        List<User> users = userService.getList();
 
+        List<User> users = userService.getList();
         String result = "";
+
         for (User user : users) {
+
             IndexResponse response =
                     ElasticsearchUtil.trannsportClient()
-                            .prepareIndex("users", "user",
-                                    String.valueOf(user.getId()))
+                            .prepareIndex(
+                                    "users",
+                                    "user",
+                                    String.valueOf(user.getId())
+                            )
                             .setSource(
                                     jsonBuilder()
                                             .startObject()
-                                            .field("name", user.getUsername())
-                                            .field("DOB", user.getDateOfBirth())
-                                            .field("fatherName",
-                                                    user.getFatherName())
-                                            .field("motherName",
-                                                    user.getMotherName())
-                                            .field("gender", user.getGender())
-                                            .field("nationality",
-                                                    user.getNationality())
-                                            .field("phoneNumber",
-                                                    user.getPhoneNumber())
+                                            .field(
+                                                    "name",
+                                                    user.getUsername()
+                                            )
+                                            .field(
+                                                    "DOB",
+                                                    user.getDateOfBirth()
+                                            )
+                                            .field(
+                                                    "fatherName",
+                                                    user.getFatherName()
+                                            )
+                                            .field(
+                                                    "motherName",
+                                                    user.getMotherName()
+                                            )
+                                            .field(
+                                                    "gender",
+                                                    user.getGender()
+                                            )
+                                            .field(
+                                                    "nationality",
+                                                    user.getNationality()
+                                            )
+                                            .field(
+                                                    "phoneNumber",
+                                                    user.getPhoneNumber()
+                                            )
                                             .endObject()
                             )
                             .get();
@@ -86,15 +111,28 @@ public final class ElasticSearchController {
      * @param model the UI model
      * @return view name
      */
-    @RequestMapping(value = "/rest/users/view/{id}", method = RequestMethod.GET)
-    public String view(@PathVariable final String id, final Model model) {
+    @RequestMapping(
+            value = "/rest/users/view/{id}",
+            method = RequestMethod.GET
+    )
+    public String view(
+            @PathVariable final String id,
+            final Model model) {
+
         GetResponse getResponse =
                 ElasticsearchUtil.trannsportClient()
-                        .prepareGet("users", "user", id)
+                        .prepareGet(
+                                "users",
+                                "user",
+                                id
+                        )
                         .get();
 
         System.out.println(getResponse.getSource());
-        model.addAttribute("res", getResponse.getSource().get("name"));
+        model.addAttribute(
+                "res",
+                getResponse.getSource().get("name")
+        );
 
         return "elasticeSearchRes";
     }
@@ -107,11 +145,17 @@ public final class ElasticSearchController {
      * @return view name
      * @throws IOException if JSON building fails
      */
-    @RequestMapping(value = "/rest/users/update/{id}", method = RequestMethod.GET)
-    public String update(@PathVariable final String id, final Model model)
+    @RequestMapping(
+            value = "/rest/users/update/{id}",
+            method = RequestMethod.GET
+    )
+    public String update(
+            @PathVariable final String id,
+            final Model model)
             throws IOException {
 
         UpdateRequest updateRequest = new UpdateRequest();
+
         updateRequest.index("employee")
                 .type("id")
                 .id(id)
@@ -123,14 +167,20 @@ public final class ElasticSearchController {
                 );
 
         try {
+
             UpdateResponse updateResponse =
                     ElasticsearchUtil.trannsportClient()
                             .update(updateRequest)
                             .get();
 
             System.out.println(updateResponse.status());
-            model.addAttribute("res", updateResponse.status());
+            model.addAttribute(
+                    "res",
+                    updateResponse.status()
+            );
+
             return "elasticeSearchRes";
+
         } catch (InterruptedException | ExecutionException e) {
             System.out.println(e);
         }
@@ -145,15 +195,31 @@ public final class ElasticSearchController {
      * @param model the UI model
      * @return view name
      */
-    @RequestMapping(value = "/rest/users/delete/{id}", method = RequestMethod.GET)
-    public String delete(@PathVariable final String id, final Model model) {
+    @RequestMapping(
+            value = "/rest/users/delete/{id}",
+            method = RequestMethod.GET
+    )
+    public String delete(
+            @PathVariable final String id,
+            final Model model) {
+
         DeleteResponse deleteResponse =
                 ElasticsearchUtil.trannsportClient()
-                        .prepareDelete("employee", "id", id)
+                        .prepareDelete(
+                                "employee",
+                                "id",
+                                id
+                        )
                         .get();
 
-        System.out.println(deleteResponse.getResult().toString());
-        model.addAttribute("res", deleteResponse.getResult().toString());
+        System.out.println(
+                deleteResponse.getResult().toString()
+        );
+
+        model.addAttribute(
+                "res",
+                deleteResponse.getResult().toString()
+        );
 
         return "elasticeSearchRes";
     }

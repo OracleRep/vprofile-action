@@ -31,7 +31,7 @@ public final class MemcachedUtils {
     /**
      * Configuration components (injected once by Spring).
      */
-    private static Components COMPONENTS;
+    private static Components components;
 
     /**
      * Injects application components used by this utility.
@@ -40,7 +40,7 @@ public final class MemcachedUtils {
      */
     @Autowired
     public void setComponents(final Components components) {
-        MemcachedUtils.COMPONENTS = components;
+        MemcachedUtils.components = components;
     }
 
     /**
@@ -60,7 +60,11 @@ public final class MemcachedUtils {
             System.out.println("Client is :: " + activeClient.getStats());
             System.out.println("--------------------------------------------");
 
-            Future<?> future = activeClient.set(key, DEFAULT_EXPIRY_SECONDS, user);
+            Future<?> future = activeClient.set(
+                    key,
+                    DEFAULT_EXPIRY_SECONDS,
+                    user
+            );
 
             System.out.println("set status: " + future.get());
             result = "Data is From DB and Data Inserted In Cache !!";
@@ -116,8 +120,8 @@ public final class MemcachedUtils {
         boolean isActive = true;
         String port = "";
 
-        String activeHost = COMPONENTS.getActiveHost();
-        String activePort = COMPONENTS.getActivePort();
+        String activeHost = components.getActiveHost();
+        String activePort = components.getActivePort();
 
         try {
             if (!activeHost.isEmpty()
@@ -132,8 +136,12 @@ public final class MemcachedUtils {
                 );
 
                 for (SocketAddress address : connection.getStats().keySet()) {
-                    System.out.println("Connection SocketAddress :: " + address);
-                    port = connection.getStats().get(address).get(STATS_PORT_KEY);
+                    System.out.println(
+                            "Connection SocketAddress :: " + address
+                    );
+                    port = connection.getStats()
+                            .get(address)
+                            .get(STATS_PORT_KEY);
                 }
 
                 if (port == null) {
@@ -142,7 +150,8 @@ public final class MemcachedUtils {
 
                     System.out.println("--------------------------------------------");
                     System.out.println(
-                            "Connection Failure By Active Host :: " + activeHost
+                            "Connection Failure By Active Host :: "
+                                    + activeHost
                     );
                     System.out.println("--------------------------------------------");
 
@@ -191,8 +200,8 @@ public final class MemcachedUtils {
         MemcachedClient connection = null;
 
         String port = "";
-        String standByHost = COMPONENTS.getStandByHost();
-        String standByPort = COMPONENTS.getStandByPort();
+        String standByHost = components.getStandByHost();
+        String standByPort = components.getStandByPort();
 
         try {
             if (!standByHost.isEmpty()
@@ -208,7 +217,9 @@ public final class MemcachedUtils {
                 );
 
                 for (SocketAddress address : connection.getStats().keySet()) {
-                    port = connection.getStats().get(address).get(STATS_PORT_KEY);
+                    port = connection.getStats()
+                            .get(address)
+                            .get(STATS_PORT_KEY);
                 }
 
                 if (!port.isEmpty()) {
@@ -225,7 +236,8 @@ public final class MemcachedUtils {
 
                 System.out.println("--------------------------------------------");
                 System.out.println(
-                        "Connection Failure By StandBy Host :: " + standByHost
+                        "Connection Failure By StandBy Host :: "
+                                + standByHost
                 );
                 System.out.println("--------------------------------------------");
             }

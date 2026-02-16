@@ -31,10 +31,14 @@ public class ProducerServiceImpl implements ProducerService {
 
             /*
              * Debug values (kept as comment):
-             * System.out.println("Rabbitmq host: " + RabbitMqUtil.getRabbitMqHost());
-             * System.out.println("Rabbitmq port: " + RabbitMqUtil.getRabbitMqPort());
-             * System.out.println("Rabbitmq user: " + RabbitMqUtil.getRabbitMqUser());
-             * System.out.println("Rabbitmq password: " + RabbitMqUtil.getRabbitMqPassword());
+             * System.out.println("Rabbitmq host: "
+             *         + RabbitMqUtil.getRabbitMqHost());
+             * System.out.println("Rabbitmq port: "
+             *         + RabbitMqUtil.getRabbitMqPort());
+             * System.out.println("Rabbitmq user: "
+             *         + RabbitMqUtil.getRabbitMqUser());
+             * System.out.println("Rabbitmq password: "
+             *         + RabbitMqUtil.getRabbitMqPassword());
              */
 
             factory.setHost(RabbitMqUtil.getRabbitMqHost());
