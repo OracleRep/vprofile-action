@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <checkstyle version="9.3">
 <file name="C:\devopswork\devops4sure\vprofile-action\src\main\java\com\visualpathit\account\utils\MemcachedUtils.java">
-<error line="175" severity="error" message="Line has trailing spaces." source="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpSinglelineCheck"/>
 </file>
 </checkstyle>
