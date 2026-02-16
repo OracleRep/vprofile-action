@@ -1,27 +1,38 @@
 package com.visualpathit.account.service;
 
-import com.visualpathit.account.model.User;
-import com.visualpathit.account.repository.RoleRepository;
-import com.visualpathit.account.repository.UserRepository;
+import java.util.HashSet;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
+import com.visualpathit.account.model.User;
+import com.visualpathit.account.repository.RoleRepository;
+import com.visualpathit.account.repository.UserRepository;
 
-/** {@author imrant}!*/
+/**
+ * User service implementation.
+ */
 @Service
-public class UserServiceImpl implements UserService {
+public final class UserServiceImpl implements UserService {
+
+    /**
+     * Repository for user persistence.
+     */
     @Autowired
-    /** userRepository !*/
     private UserRepository userRepository;
+
+    /**
+     * Repository for role persistence.
+     */
     @Autowired
-    /** roleRepository !*/
     private RoleRepository roleRepository;
+
+    /**
+     * Encoder used to hash user passwords.
+     */
     @Autowired
-    /** bCryptPasswordEncoder !*/
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
@@ -35,13 +46,14 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(final String username) {
         return userRepository.findByUsername(username);
     }
-    
+
     @Override
     public List<User> getList() {
-    	return userRepository.findAll();
+        return userRepository.findAll();
     }
+
     @Override
-	public User findById(long id){
-    	return userRepository.findOne(id);
+    public User findById(final long id) {
+        return userRepository.findOne(id);
     }
 }

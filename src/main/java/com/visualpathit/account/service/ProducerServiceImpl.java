@@ -1,56 +1,71 @@
 package com.visualpathit.account.service;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+import org.springframework.stereotype.Service;
+
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.visualpathit.account.utils.RabbitMqUtil;
-
-import org.springframework.stereotype.Service;
-import com.rabbitmq.client.Channel;
-
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 @Service
 public class ProducerServiceImpl implements ProducerService {
 
     /**
-     *  The name of the Exchange
+     * The name of the exchange.
      */
     private static final String EXCHANGE_NAME = "messages";
 
     /**
-     *  This method publishes a message
-     * @param message
+     * Publishes a message.
+     *
+     * @param message the message to publish
+     * @return a response string
      */
     @Override
-    public String produceMessage(String message) {
+    public String produceMessage(final String message) {
         try {
             ConnectionFactory factory = new ConnectionFactory();
-            /**
-            * System.out.println("Rabitmq host: ::" + RabbitMqUtil.getRabbitMqHost());
-            * System.out.println("Rabitmq port: ::" + RabbitMqUtil.getRabbitMqPort());
-            * System.out.println("Rabitmq user: ::" + RabbitMqUtil.getRabbitMqUser());
-            * System.out.println("Rabitmq password: ::" + RabbitMqUtil.getRabbitMqPassword());
-            **/
+
+            /*
+             * Debug values (kept as comment):
+             * System.out.println("Rabbitmq host: " + RabbitMqUtil.getRabbitMqHost());
+             * System.out.println("Rabbitmq port: " + RabbitMqUtil.getRabbitMqPort());
+             * System.out.println("Rabbitmq user: " + RabbitMqUtil.getRabbitMqUser());
+             * System.out.println("Rabbitmq password: " + RabbitMqUtil.getRabbitMqPassword());
+             */
+
             factory.setHost(RabbitMqUtil.getRabbitMqHost());
             factory.setPort(Integer.parseInt(RabbitMqUtil.getRabbitMqPort()));
             factory.setUsername(RabbitMqUtil.getRabbitMqUser());
             factory.setPassword(RabbitMqUtil.getRabbitMqPassword());
+
             Connection connection = factory.newConnection();
-            System.out.println("Connection open status"+connection.isOpen());
+            System.out.println("Connection open status " + connection.isOpen());
+
             Channel channel = connection.createChannel();
             channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
-            channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes());
-            System.out.println(" [x] Sent '" + message + "'");
+            channel.basicPublish(
+                    EXCHANGE_NAME,
+                    "",
+                    null,
+                    message.getBytes()
+            );
+
+            System.out.println("[x] Sent '" + message + "'");
+
             channel.close();
             connection.close();
         } catch (IOException io) {
             System.out.println("IOException");
             io.printStackTrace();
         } catch (TimeoutException toe) {
-            System.out.println("TimeoutException : " + toe.getMessage());
+            System.out.println("TimeoutException: " + toe.getMessage());
             toe.printStackTrace();
         }
+
         return "response";
     }
 }

@@ -1,0 +1,4 @@
+#Mon Feb 16 10:59:38 EET 2026
+module-resource*?\:checkstyle-suppressions.xml=A18525EF7D123A94A1E6D31C3BB5FB6906AB17EE
+module-resource*?\:checkstyle-xpath-suppressions.xml=2A54D2E6BAB2199F3442667761271891D0310344
+configuration*?=36A9FDBC50E27F46202C6DC2C0A3E7BD93178309

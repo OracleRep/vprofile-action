@@ -1,54 +1,96 @@
 package com.visualpathit.account.model;
 
-import javax.persistence.*;
 import java.util.Set;
-/**{@author imrant} !*/
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+
+/**
+ * Role entity.
+ */
 @Entity
 @Table(name = "role")
 public class Role {
-	/** the id field !*/
+
+    /**
+     * Role identifier.
+     */
     private Long id;
-    /** the name field !*/
+
+    /**
+     * Role name.
+     */
     private String name;
-    /** the user field !*/
+
+    /**
+     * Users assigned to this role.
+     */
     private Set<User> users;
-    /** {@inheritDoc}} !*/
+
+    /**
+     * Returns the role id.
+     *
+     * @return the role id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    /**
-     * {@link Role#id}
-     !*/
     public Long getId() {
         return id;
     }
-    /** {@inheritDoc}} !*/
-    public  void setId(final Long id) {
-        this.id = id;
-    }
+
     /**
-     * {@link Role#name}
-     !*/
+     * Sets the role id.
+     *
+     * @param newId the role id
+     */
+    public void setId(final Long newId) {
+        this.id = newId;
+    }
+
+    /**
+     * Returns the role name.
+     *
+     * @return the role name
+     */
     public String getName() {
         return name;
     }
-    /** {@inheritDoc}} !*/
-    public  void setName(final String name) {
-        this.name = name;
+
+    /**
+     * Sets the role name.
+     *
+     * @param newName the role name
+     */
+    public void setName(final String newName) {
+        this.name = newName;
     }
+
     /**
-     * {@inheritDoc}} 
-     !*/
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "roles",cascade = CascadeType.ALL)
-    /**
-     * {@link Role#id}
-     !*/
-    public Set <User> getUsers() {
+     * Returns users assigned to this role.
+     *
+     * @return users assigned to this role
+     */
+    @ManyToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "roles",
+            cascade = CascadeType.ALL
+    )
+    public Set<User> getUsers() {
         return users;
     }
+
     /**
-     * {@inheritDoc}} 
-     !*/
-    public final void setUsers(Set<User> users) {
-        this.users = users;
+     * Sets users assigned to this role.
+     *
+     * @param newUsers users assigned to this role
+     */
+    public void setUsers(final Set<User> newUsers) {
+        this.users = newUsers;
     }
 }
