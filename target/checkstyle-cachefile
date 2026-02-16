@@ -1,4 +1,4 @@
-#Mon Feb 16 14:27:58 EET 2026
+#Mon Feb 16 14:49:18 EET 2026
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\model\\User.java=1771241065931
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\service\\SecurityServiceImpl.java=1771233746301
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\service\\ProducerService.java=1771233596836
@@ -20,6 +20,7 @@ module-resource*?\:checkstyle-suppressions.xml=A18525EF7D123A94A1E6D31C3BB5FB690
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\service\\SecurityService.java=1771234542579
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\service\\ProducerServiceImpl.java=1771241762982
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\model\\package-info.java=1771240814405
+C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\controller\\UserController.java=1771245590018
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\service\\UserDetailsServiceImpl.java=1771234268043
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\resources\\application.properties=1771241271538
 C\:\\devopswork\\devops4sure\\vprofile-action\\src\\main\\java\\com\\visualpathit\\account\\repository\\RoleRepository.java=1771238603712

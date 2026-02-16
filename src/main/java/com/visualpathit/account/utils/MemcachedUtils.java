@@ -170,7 +170,9 @@ public final class MemcachedUtils {
                     System.out.println(SEPARATOR);
 
                     String okPrefix =
-                            "Connection to server successful for Active Host ::";
+                            "Connection to server successful for Active Host "
+                            + "::";
+                    
                     System.out.println(okPrefix);
                     System.out.println(activeHost);
 
@@ -179,10 +181,11 @@ public final class MemcachedUtils {
                     isActive = true;
                     return connection;
                 }
-            } else if (!activeHost.isEmpty()
+            } else if (
+                    !activeHost.isEmpty()
                     && !activePort.isEmpty()
-                    && !isActive) {
-
+                    && !isActive
+            ) {
                 return standByMemcachedConn();
             } else {
                 System.out.println(SEPARATOR);
@@ -211,10 +214,12 @@ public final class MemcachedUtils {
         String standByPort = components.getStandByPort();
 
         try {
-            if (!standByHost.isEmpty()
+            if (
+                    !standByHost.isEmpty()
                     && !standByPort.isEmpty()
                     && connection == null
-                    && port.isEmpty()) {
+                    && port.isEmpty()
+            ) {
 
                 connection = new MemcachedClient(
                         new InetSocketAddress(
@@ -233,7 +238,9 @@ public final class MemcachedUtils {
                     System.out.println(SEPARATOR);
 
                     String okPrefix =
-                            "Connection to server successful by StandBy Host ::";
+                            "Connection to server successful by StandBy Host "
+                            + "::";
+
                     System.out.println(okPrefix);
                     System.out.println(standByHost);
 
