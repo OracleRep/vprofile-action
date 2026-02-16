@@ -133,9 +133,8 @@ public final class MemcachedUtils {
                 );
 
                 for (SocketAddress address : connection.getStats().keySet()) {
-                    System.out.println(
-                            "Connection SocketAddress :: " + address
-                    );
+                    String line = "Connection SocketAddress :: " + address;
+                    System.out.println(line);
 
                     port = connection.getStats()
                             .get(address)
@@ -147,10 +146,12 @@ public final class MemcachedUtils {
                     connection.shutdown();
 
                     System.out.println("--------------------------------------------");
-                    System.out.println(
+
+                    String failLine =
                             "Connection Failure By Active Host :: "
-                                    + activeHost
-                    );
+                                    + activeHost;
+                    System.out.println(failLine);
+
                     System.out.println("--------------------------------------------");
 
                     connection = null;
@@ -161,10 +162,12 @@ public final class MemcachedUtils {
 
                 if (!port.isEmpty()) {
                     System.out.println("--------------------------------------------");
-                    System.out.println(
+
+                    String okLine =
                             "Connection to server successful for Active Host :: "
-                                    + activeHost
-                    );
+                                    + activeHost;
+                    System.out.println(okLine);
+
                     System.out.println("--------------------------------------------");
 
                     isActive = true;
@@ -222,10 +225,12 @@ public final class MemcachedUtils {
 
                 if (!port.isEmpty()) {
                     System.out.println("--------------------------------------------");
-                    System.out.println(
+
+                    String okLine =
                             "Connection to server successful by StandBy Host :: "
-                                    + standByHost
-                    );
+                                    + standByHost;
+                    System.out.println(okLine);
+
                     System.out.println("--------------------------------------------");
                     return connection;
                 }
@@ -233,10 +238,12 @@ public final class MemcachedUtils {
                 connection.shutdown();
 
                 System.out.println("--------------------------------------------");
-                System.out.println(
+
+                String failLine =
                         "Connection Failure By StandBy Host :: "
-                                + standByHost
-                );
+                                + standByHost;
+                System.out.println(failLine);
+
                 System.out.println("--------------------------------------------");
             }
         } catch (Exception e) {

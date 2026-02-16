@@ -191,7 +191,10 @@ public final class UserController {
                 System.out.println("--------------------------------------------");
                 System.out.println("Data is From Cache !!");
                 System.out.println("--------------------------------------------");
-                System.out.println("Father ::: " + cachedUser.getFatherName());
+
+                String fatherNameLine =
+                        "Father ::: " + cachedUser.getFatherName();
+                System.out.println(fatherNameLine);
 
                 model.addAttribute("user", cachedUser);
                 model.addAttribute("Result", result);
@@ -206,7 +209,9 @@ public final class UserController {
                 System.out.println("--------------------------------------------");
                 System.out.println("Data is From Database");
                 System.out.println("--------------------------------------------");
-                System.out.println("Result ::: " + result);
+
+                String resultLine = "Result ::: " + result;
+                System.out.println(resultLine);
 
                 model.addAttribute("user", user);
                 model.addAttribute("Result", result);
@@ -265,9 +270,11 @@ public final class UserController {
         user.setPermanentAddress(userForm.getPermanentAddress());
         user.setTempAddress(userForm.getTempAddress());
         user.setPhoneNumber(userForm.getPhoneNumber());
+
         user.setSecondaryPhoneNumber(
                 userForm.getSecondaryPhoneNumber()
         );
+
         user.setPrimaryOccupation(userForm.getPrimaryOccupation());
         user.setSecondaryOccupation(userForm.getSecondaryOccupation());
         user.setSkills(userForm.getSkills());
