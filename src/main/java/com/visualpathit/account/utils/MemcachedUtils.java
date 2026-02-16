@@ -29,6 +29,12 @@ public final class MemcachedUtils {
     private static final String STATS_PORT_KEY = "pid";
 
     /**
+     * Console separator line.
+     */
+    private static final String SEPARATOR =
+            "--------------------------------------------";
+
+    /**
      * Configuration components (injected once by Spring).
      */
     private static Components components;
@@ -56,9 +62,9 @@ public final class MemcachedUtils {
         try {
             MemcachedClient activeClient = memcachedConnection();
 
-            System.out.println("--------------------------------------------");
+            System.out.println(SEPARATOR);
             System.out.println("Client is :: " + activeClient.getStats());
-            System.out.println("--------------------------------------------");
+            System.out.println(SEPARATOR);
 
             Future<?> future =
                     activeClient.set(key, DEFAULT_EXPIRY_SECONDS, user);
@@ -87,9 +93,9 @@ public final class MemcachedUtils {
         try {
             MemcachedClient client = memcachedConnection();
 
-            System.out.println("--------------------------------------------");
+            System.out.println(SEPARATOR);
             System.out.println("Client Status :: " + client.getStats());
-            System.out.println("--------------------------------------------");
+            System.out.println(SEPARATOR);
 
             userData = (User) client.get(key);
 
@@ -145,14 +151,14 @@ public final class MemcachedUtils {
                     System.out.println("Port :: " + port);
                     connection.shutdown();
 
-                    System.out.println("--------------------------------------------");
+                    System.out.println(SEPARATOR);
 
                     String failLine =
                             "Connection Failure By Active Host :: "
                                     + activeHost;
                     System.out.println(failLine);
 
-                    System.out.println("--------------------------------------------");
+                    System.out.println(SEPARATOR);
 
                     connection = null;
                     isActive = false;
@@ -161,14 +167,14 @@ public final class MemcachedUtils {
                 }
 
                 if (!port.isEmpty()) {
-                    System.out.println("--------------------------------------------");
+                    System.out.println(SEPARATOR);
 
-                    String okLine =
-                            "Connection to server successful for Active Host :: "
-                                    + activeHost;
-                    System.out.println(okLine);
+                    String okPrefix =
+                            "Connection to server successful for Active Host ::";
+                    System.out.println(okPrefix);
+                    System.out.println(activeHost);
 
-                    System.out.println("--------------------------------------------");
+                    System.out.println(SEPARATOR);
 
                     isActive = true;
                     return connection;
@@ -179,11 +185,11 @@ public final class MemcachedUtils {
 
                 return standByMemcachedConn();
             } else {
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
                 System.out.println(
                         "Connection Failure Due to Incorrect or Empty Host"
                 );
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -224,27 +230,27 @@ public final class MemcachedUtils {
                 }
 
                 if (!port.isEmpty()) {
-                    System.out.println("--------------------------------------------");
+                    System.out.println(SEPARATOR);
 
-                    String okLine =
-                            "Connection to server successful by StandBy Host :: "
-                                    + standByHost;
-                    System.out.println(okLine);
+                    String okPrefix =
+                            "Connection to server successful by StandBy Host ::";
+                    System.out.println(okPrefix);
+                    System.out.println(standByHost);
 
-                    System.out.println("--------------------------------------------");
+                    System.out.println(SEPARATOR);
                     return connection;
                 }
 
                 connection.shutdown();
 
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
 
                 String failLine =
                         "Connection Failure By StandBy Host :: "
                                 + standByHost;
                 System.out.println(failLine);
 
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

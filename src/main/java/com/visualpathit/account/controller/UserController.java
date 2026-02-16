@@ -26,6 +26,12 @@ import com.visualpathit.account.validator.UserValidator;
 public final class UserController {
 
     /**
+     * Console separator line.
+     */
+    private static final String SEPARATOR =
+            "--------------------------------------------";
+
+    /**
      * Number of messages to publish when testing RabbitMQ.
      */
     private static final int RABBITMQ_MESSAGE_COUNT = 20;
@@ -135,10 +141,7 @@ public final class UserController {
      * @param model the UI model
      * @return view name
      */
-    @RequestMapping(
-            value = {"/", "/welcome"},
-            method = RequestMethod.GET
-    )
+    @RequestMapping(value = {"/", "/welcome"}, method = RequestMethod.GET)
     public String welcome(final Model model) {
         return "welcome";
     }
@@ -188,9 +191,9 @@ public final class UserController {
             if (id != null && cachedUser != null) {
                 result = "Data is From Cache";
 
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
                 System.out.println("Data is From Cache !!");
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
 
                 String fatherNameLine =
                         "Father ::: " + cachedUser.getFatherName();
@@ -206,9 +209,9 @@ public final class UserController {
                     result = "Memcached Connection Failure !!";
                 }
 
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
                 System.out.println("Data is From Database");
-                System.out.println("--------------------------------------------");
+                System.out.println(SEPARATOR);
 
                 String resultLine = "Result ::: " + result;
                 System.out.println(resultLine);
@@ -270,11 +273,7 @@ public final class UserController {
         user.setPermanentAddress(userForm.getPermanentAddress());
         user.setTempAddress(userForm.getTempAddress());
         user.setPhoneNumber(userForm.getPhoneNumber());
-
-        user.setSecondaryPhoneNumber(
-                userForm.getSecondaryPhoneNumber()
-        );
-
+        user.setSecondaryPhoneNumber(userForm.getSecondaryPhoneNumber());
         user.setPrimaryOccupation(userForm.getPrimaryOccupation());
         user.setSecondaryOccupation(userForm.getSecondaryOccupation());
         user.setSkills(userForm.getSkills());
