@@ -1,5 +1,3 @@
-name: vprofile-actions
-
 on:
   workflow_dispatch:
 
@@ -86,8 +84,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.run_number }}
+              ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+              ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.run_number }}
         
 
   # DeployToEKS: 
@@ -123,7 +121,7 @@ jobs:
   #         #config-files: .github/values/dev.yaml
   #         chart-path: helm/vprofilecharts 
   #         namespace: default 
-  #         values: appimage=${{ secrets.REGISTRY }}/${{ env.ECR_REPOSITORY }},apptag=${{ github.run_number }}
+  #         values: appimage=${{ secrets.REGISTRY }}/${{ env.ECR_REPOSITORY }},apptag={{ github.run_number }}
   #         name: vprofile-stack 
           
 
