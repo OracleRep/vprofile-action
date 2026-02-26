@@ -1,10 +1,17 @@
+name: CI Build & Deploy (OIDC)
+
 on:
   workflow_dispatch:
+
+# Required for OIDC
+permissions:
+  id-token: write
+  contents: read
 
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: vprofileapp
-  EKS_CLUSTER: vprofile-eks
+  EKS_CLUSTER: vprofile-eks-test
 
 jobs:
   testing:
@@ -55,47 +62,38 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_URL }}
-  
-  BUILD_AND_PUBLISH:   
-    needs: testing
-    runs-on: ubuntu-latest
-    steps:
-      - name: Code checkout
-        uses: actions/checkout@v4
 
-      - name: Build & Upload image to ECR
-        uses: appleboy/docker-ecr-action@master
-        with:
-         access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-         secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-         registry: ${{ secrets.REGISTRY }}
-         repo: ${{ env.ECR_REPOSITORY }}
-         region: ${{ env.AWS_REGION }}
-         tags: latest,${{ github.run_number }}
-         daemon_off: false
-         dockerfile: ./Dockerfile
-         context: ./
   # build_and_publish:
-  #    needs: testing
-  #    runs-on: ubuntu-latest
-  #    steps:
+  #   needs: testing
+  #   runs-on: ubuntu-latest
+
+  #   outputs:
+  #     image_tag: ${{ steps.meta.outputs.image_tag }}
+  #     registry: ${{ steps.login-ecr.outputs.registry }}
+
+  #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
-        
-  #     - name: Configure AWS credentials
+
+  #     # OIDC auth (replaces access keys)
+  #     - name: Configure AWS credentials (OIDC)
   #       uses: aws-actions/configure-aws-credentials@v4
   #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
   #         aws-region: ${{ env.AWS_REGION }}
-        
+  #         role-session-name: github-actions-ecr
+
   #     - name: Verify AWS identity
   #       run: aws sts get-caller-identity
-        
+
   #     - name: Login to Amazon ECR
   #       id: login-ecr
   #       uses: aws-actions/amazon-ecr-login@v2
-        
+
+  #     - name: Set image tag
+  #       id: meta
+  #       run: echo "image_tag=${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
   #     - name: Build and push image
   #       uses: docker/build-push-action@v6
   #       with:
@@ -103,44 +101,51 @@ jobs:
   #         file: ./Dockerfile
   #         push: true
   #         tags: |
-  #             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-  #             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.run_number }}
-        
+  #           ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+  #           ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
 
-  # DeployToEKS: 
+  # DeployToEKS:
   #   needs: build_and_publish
   #   runs-on: ubuntu-latest
-  #   steps: 
+
+  #   steps:
   #     - name: Code checkout
   #       uses: actions/checkout@v4
 
-  #     - name: Configure AWS Credentials 
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with: 
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
-  #         aws-region: ${{ env.AWS_REGION }}
-
-  #     - name: Get Kube config file 
-  #       run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }} 
-
-  #     - name: Print config file 
-  #       run: cat ~/.kube/config 
-
-  #     - name: Login ECR 
-  #       run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
-
-  #     - name: Deploy Helm 
-  #       uses: bitovi/github-actions-deploy-eks-helm@v1.2.8 
+  #     # OIDC auth (replaces access keys)
+  #     - name: Configure AWS Credentials (OIDC)
+  #       uses: aws-actions/configure-aws-credentials@v4
   #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
   #         aws-region: ${{ env.AWS_REGION }}
-  #         cluster-name: ${{ env.EKS_CLUSTER }}
-  #         #config-files: .github/values/dev.yaml
-  #         chart-path: helm/vprofilecharts 
-  #         namespace: default 
-  #         values: appimage=${{ secrets.REGISTRY }}/${{ env.ECR_REPOSITORY }},apptag={{ github.run_number }}
-  #         name: vprofile-stack 
-          
+  #         role-session-name: github-actions-eks
+
+  #     - name: Verify AWS identity
+  #       run: aws sts get-caller-identity
+
+  #     - name: Get Kube config file
+  #       run: aws eks update-kubeconfig --region "${AWS_REGION}" --name "${EKS_CLUSTER}"
+
+  #     - name: Print config file
+  #       run: cat ~/.kube/config
+
+  #     - name: Login ECR (create/update pull secret)
+  #       run: |
+  #         kubectl create secret docker-registry regcred \
+  #           --docker-server="${{ needs.build_and_publish.outputs.registry }}" \
+  #           --docker-username=AWS \
+  #           --docker-password="$(aws ecr get-login-password --region "${AWS_REGION}")" \
+  #           --dry-run=client -o yaml | kubectl apply -f -
+
+  #     # Deploy Helm
+  #     - name: Install Helm
+  #       uses: azure/setup-helm@v4
+
+  #     # Deploy Helm
+  #     - name: Deploy Helm
+  #       run: |
+  #         helm upgrade --install vprofile-stack helm/vprofilecharts \
+  #           --namespace default --create-namespace \
+  #           --set appimage="${{ needs.build_and_publish.outputs.registry }}/${ECR_REPOSITORY}" \
+  #           --set apptag="${{ needs.build_and_publish.outputs.image_tag }}"
 
