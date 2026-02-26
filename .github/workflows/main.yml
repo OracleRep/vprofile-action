@@ -80,7 +80,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.dswyytd }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions-ecr
 
@@ -117,7 +117,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.ggfdeswxg }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions-eks
 
