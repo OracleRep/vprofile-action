@@ -3,6 +3,7 @@ name: CI Build & Deploy (OIDC)
 on:
   workflow_dispatch:
 
+    
 # Required for OIDC
 permissions:
   id-token: write
