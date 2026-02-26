@@ -63,46 +63,46 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_URL }}
 
-  # build_and_publish:
-  #   needs: testing
-  #   runs-on: ubuntu-latest
+  build_and_publish:
+    needs: testing
+    runs-on: ubuntu-latest
 
-  #   outputs:
-  #     image_tag: ${{ steps.meta.outputs.image_tag }}
-  #     registry: ${{ steps.login-ecr.outputs.registry }}
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      registry: ${{ steps.login-ecr.outputs.registry }}
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     # OIDC auth (replaces access keys)
-  #     - name: Configure AWS credentials (OIDC)
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-  #         aws-region: ${{ env.AWS_REGION }}
-  #         role-session-name: github-actions-ecr
+      # OIDC auth (replaces access keys)
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-ecr
 
-  #     - name: Verify AWS identity
-  #       run: aws sts get-caller-identity
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
-  #     - name: Login to Amazon ECR
-  #       id: login-ecr
-  #       uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-  #     - name: Set image tag
-  #       id: meta
-  #       run: echo "image_tag=${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+      - name: Set image tag
+        id: meta
+        run: echo "image_tag=${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
 
-  #     - name: Build and push image
-  #       uses: docker/build-push-action@v6
-  #       with:
-  #         context: .
-  #         file: ./Dockerfile
-  #         push: true
-  #         tags: |
-  #           ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-  #           ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
 
   # DeployToEKS:
   #   needs: build_and_publish
